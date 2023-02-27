@@ -113,11 +113,28 @@ static NSString *const __RongCallKit__Time = @"202301171731";
 }
 
 - (void)startSingleCall:(NSString *)targetId mediaType:(RCCallMediaType)mediaType {
+    
+    [self startSingleCall:targetId mediaType:mediaType finish:nil];
+}
+
+- (void)startSingleCall:(NSString *)targetId mediaType:(RCCallMediaType)mediaType finish:(void (^)(BOOL))finish {
+    
     if ([self preCheckForStartCall:mediaType]) {
-        [self checkSystemPermission:mediaType
-                            success:^{
-                                [self startSingleCallViewController:targetId mediaType:mediaType];
-                            }];
+        
+        [self checkSystemPermission:mediaType success:^{
+            
+            [self startSingleCallViewController:targetId mediaType:mediaType];
+            
+            if (finish) {
+                
+                finish(YES);
+            }
+            
+        }];
+    }
+    else if (finish) {
+        
+        finish(NO);
     }
 }
 
@@ -128,9 +145,17 @@ static NSString *const __RongCallKit__Time = @"202301171731";
 }
 
 - (void)startSingleCallViewController:(NSString *)targetId mediaType:(RCCallMediaType)mediaType {
-    RCCallSingleCallViewController *singleCallViewController =
-        [[RCCallSingleCallViewController alloc] initWithOutgoingCall:targetId mediaType:mediaType];
-    [self presentCallViewController:singleCallViewController];
+    if (self.startSingleCallViewController) {
+        
+        self.startSingleCallViewController(targetId, mediaType);
+    }
+    else {
+        
+        RCCallSingleCallViewController *singleCallViewController =
+            [[RCCallSingleCallViewController alloc] initWithOutgoingCall:targetId mediaType:mediaType];
+        
+        [self presentCallViewController:singleCallViewController];
+    }
 }
 
 - (void)startMultiCall:(RCConversationType)conversationType
@@ -353,10 +378,19 @@ static NSString *const __RongCallKit__Time = @"202301171731";
     }
 
     if (!callSession.isMultiCall) {
-        RCCallSingleCallViewController *singleCallViewController =
-            [[RCCallSingleCallViewController alloc] initWithIncomingCall:callSession];
+        
+        if (self.receiveSingleCallViewController) {
+            
+            self.receiveSingleCallViewController(callSession);
+        }
+        else {
+            
+            RCCallSingleCallViewController *singleCallViewController =
+                [[RCCallSingleCallViewController alloc] initWithIncomingCall:callSession];
 
-        [self presentCallViewController:singleCallViewController];
+            [self presentCallViewController:singleCallViewController];
+        }
+        
     } else {
         if (callSession.mediaType == RCCallMediaAudio) {
             RCCallAudioMultiCallViewController *multiCallViewController =

@@ -35,6 +35,13 @@ UIKIT_EXTERN NSNotificationName const RCCallNewSessionCreationNotification;
  */
 @property (nonatomic, strong, readonly) RCCallSession *currentCallSession;
 
+/// 发起单人通话显示通话控制器
+@property (nonatomic, assign) void (^startSingleCallViewController)(NSString * targetID ,RCCallMediaType mediaType);
+
+/// 收到单人通话显示通话控制器
+@property (nonatomic, assign) void (^receiveSingleCallViewController)(RCCallSession * callSession);
+
+
 /*!
  音频通话支持的最大通话人数
  */
@@ -104,6 +111,9 @@ UIKIT_EXTERN NSNotificationName const RCCallNewSessionCreationNotification;
  @param mediaType 使用的媒体类型
  */
 - (void)startSingleCall:(NSString *)targetId mediaType:(RCCallMediaType)mediaType;
+
+- (void)startSingleCall:(NSString *)targetId mediaType:(RCCallMediaType)mediaType finish:(void(^_Nullable)(BOOL success))finish;
+
 
 /*!
  
